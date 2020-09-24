@@ -1,3 +1,5 @@
+require 'securerandom'
+
 module Postal
   module MessageDB
     class Message
@@ -407,6 +409,14 @@ module Postal
           headers << dkim.dkim_header
         end
         headers << "X-Postal-MsgID: #{self.token}"
+        
+       # Add Message-ID header if missing
+		   if self.raw_headers !~ /^Message\-ID\:/
+		    messageid = "#{SecureRandom.uuid}@#{self.domain.name}"
+		    update('message_id' => messageid)
+		    headers << "Message-ID: <#{messageid}>"
+		  end
+        
         append_headers(*headers)
       end
 
